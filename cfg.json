@@ -1,0 +1,7 @@
+{
+    "box": false,
+    "dist": true,
+    "hp": false,
+    "body": true,
+    "name": false
+}
