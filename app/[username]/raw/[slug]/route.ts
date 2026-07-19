@@ -35,15 +35,22 @@ export async function GET(
     // Check if request is from browser or script executor
     const acceptHeader = request.headers.get('accept') || ''
     const userAgent = request.headers.get('user-agent') || ''
-    
-    // Consider it browser if: has text/html OR has typical browser user agent OR starts with capital letter (browser typical)
-    const isBrowser = (
+
+    // Known executor / non-browser signatures always win, regardless of
+    // what the Accept header says (some executors send Accept: text/html
+    // or */* on their HttpGet, which used to leak into the browser branch).
+    const isKnownNonBrowser =
+      userAgent.includes('Roblox') ||
+      userAgent.includes('curl') ||
+      userAgent.includes('wget')
+
+    const looksLikeBrowser =
       acceptHeader.includes('text/html') ||
-      (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) &&
-      !userAgent.includes('curl') && 
-      !userAgent.includes('wget') &&
-      !userAgent.includes('Roblox')
-    )
+      userAgent.includes('Mozilla') ||
+      userAgent.includes('Chrome') ||
+      userAgent.includes('Safari')
+
+    const isBrowser = !isKnownNonBrowser && looksLikeBrowser
 
     if (isBrowser) {
       // Return HTML visual page for browser
